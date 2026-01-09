@@ -25,7 +25,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/zaposleni/moje-usluge', [ZaposleniUslugaController::class, 'mojeUsluge']);
     Route::post('/zaposleni/usluge', [ZaposleniUslugaController::class, 'store']);
     Route::get('/zaposleni', [ZaposleniController::class, 'index']);
-    
+    Route::put('/usluge/{id}', [UslugaController::class, 'update']);
+    Route::get('/usluge-izmene', [UslugaController::class, 'indexIzmene']);
+    Route::post('/usluge-izmene/{id}/odobri', [UslugaController::class, 'odobriMolbu']);
+    Route::post('/usluge-izmene/{id}/odbij', [UslugaController::class, 'odbijMolbu']);
 
 });
 

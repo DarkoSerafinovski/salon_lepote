@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Http\Requests\UslugaRequest;
 use App\Http\Requests\UslugaFilterRequest;
+use App\Http\Requests\UpdateUslugaRequest;
+use App\Http\Resources\UslugaIzmenaResource;
 use App\Http\Resources\UslugaResource;
 use App\Http\Services\UslugaService;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class UslugaController extends Controller
@@ -50,5 +54,89 @@ class UslugaController extends Controller
             ], 500);
         }
     }
+
+
+    public function update(UpdateUslugaRequest $request, $id)
+{
+    try {
+        $rezultat = $this->uslugaService->procesuirajIzmenu(
+            $id, 
+            $request->validated(), 
+            Auth::user()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => $rezultat['status'] === 'izvrseno' 
+                ? 'Usluga uspešno ažurirana.' 
+                : 'Predlog izmene je poslat vlasnici.',
+            'data' => $rezultat['data']
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
+
+
+
+    public function odobriMolbu($id)
+    {
+        try {
+            if (!Auth::user()->isVlasnica()) {
+                return response()->json(['success' => false, 'message' => 'Pristup zabranjen.'], 403);
+            }
+
+            $usluga = $this->uslugaService->odobriIzmenu($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Izmena je odobrena i primenjena.',
+                'data' => new UslugaResource($usluga)
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function odbijMolbu($id)
+    {
+        try {
+            if (!Auth::user()->isVlasnica()) {
+                return response()->json(['success' => false, 'message' => 'Pristup zabranjen.'], 403);
+            }
+
+            $this->uslugaService->odbijIzmenu($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Predlog izmene je odbijen.'
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+        public function indexIzmene()
+    {
+        try {
+        
+            if (!Auth::user()->isVlasnica()) {
+                return response()->json(['success' => false, 'message' => 'Pristup zabranjen.'], 403);
+            }
+
+            $izmene = $this->uslugaService->getSveIzmeneNaCekanju();
+
+            return UslugaIzmenaResource::collection($izmene);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 
 }
