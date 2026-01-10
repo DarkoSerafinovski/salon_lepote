@@ -23,13 +23,13 @@ class RezervacijaResource extends JsonResource
                 'trajanje' => $this->usluga->trajanje_usluge . ' min',
             ],
 
-            // Podaci o zaposlenom (sakrivamo ID-jeve, šaljemo ime)
+           
             'zaposleni' => [
                 'ime_prezime' => $this->zaposleni->user->ime . ' ' . $this->zaposleni->user->prezime,
                 'tip' => ucfirst($this->zaposleni->user->type),
             ],
 
-            // Indikator da li je termin prošao (korisno za front dugmiće)
+          
             'moze_se_otkazati' => $this->vreme_od->isFuture() && $this->status === 'potvrdjena',
         ];
     }

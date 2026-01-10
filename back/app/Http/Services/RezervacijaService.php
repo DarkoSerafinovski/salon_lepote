@@ -24,7 +24,7 @@ class RezervacijaService
             throw new Exception("Izabranog dana (" . $datumVreme->format('d.m.Y') . ") salon ne radi.", 404);
         }
 
-        // 2. Provera da li postoji radnik te kategorije
+        
         $imaLiRadnikaKategorije = Zaposleni::whereHas('user', function($q) use ($usluga) {
                 $q->where('type', $usluga->kategorija == 'sminkanje' ? 'sminkerka' : 'manikirka');
             })
@@ -36,7 +36,7 @@ class RezervacijaService
             throw new Exception("Trenutno nema dostupnih zaposlenih za kategoriju '{$usluga->kategorija}'.", 404);
         }
 
-        return $radnaVremena; // Vraćamo radna vremena jer nam trebaju za granice (min/max)
+        return $radnaVremena; 
     }
 
     public function generisiSlobodneTermine(int $uslugaId, string $datum)

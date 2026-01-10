@@ -79,7 +79,7 @@ public function store(StoreRezervacijaRequest $request)
 }
 
 
-public function rasporedObaveza(Request $request)
+public function dnevniRasporedObaveza(Request $request)
 {
     try {
        $this->proveraZaposlenog();

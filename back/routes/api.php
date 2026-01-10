@@ -18,23 +18,50 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/usluge', [UslugaController::class, 'index']);
-    Route::post('/usluge', [UslugaController::class, 'store']);
-    Route::post('/radno-vreme', [RadnoVremeController::class, 'store']);
-    Route::get('/radno-vreme/raspored', [RadnoVremeController::class, 'index']);
-    Route::get('/moj-raspored', [RadnoVremeController::class, 'mojRaspored']);
-    Route::get('/zaposleni/{id}/usluge', [ZaposleniUslugaController::class, 'show']);
-    Route::get('/zaposleni/moje-usluge', [ZaposleniUslugaController::class, 'mojeUsluge']);
-    Route::post('/zaposleni/usluge', [ZaposleniUslugaController::class, 'store']);
-    Route::get('/zaposleni', [ZaposleniController::class, 'index']);
     Route::put('/usluge/{id}', [UslugaController::class, 'update']);
-    Route::get('/usluge-izmene', [UslugaController::class, 'indexIzmene']);
-    Route::post('/usluge-izmene/{id}/odobri', [UslugaController::class, 'odobriMolbu']);
-    Route::post('/usluge-izmene/{id}/odbij', [UslugaController::class, 'odbijMolbu']);
-    Route::get('/rezervacije/slobodni-termini', [RezervacijaController::class, 'getTermini']);
-    Route::post('/rezervacije', [RezervacijaController::class, 'store']);
-    Route::get('/rezervacije/moje-rezervacije', [RezervacijaController::class, 'rezervacijeKlijenta']);
-    Route::delete('/rezervacije/otkazi-rezervaciju/{id}', [RezervacijaController::class, 'destroy']);
-    Route::get('/rezervacije/moj-raspored-obaveza', [RezervacijaController::class, 'rasporedObaveza']);
+     Route::get('/rezervacije/slobodni-termini', [RezervacijaController::class, 'getTermini']);
+
+
+    Route::prefix('vlasnica')->group(function () {
+         Route::post('/usluge', [UslugaController::class, 'store']);
+         Route::get('/usluge-izmene', [UslugaController::class, 'indexIzmene']);
+         Route::post('/usluge-izmene/{id}/odobri', [UslugaController::class, 'odobriMolbu']);
+         Route::post('/usluge-izmene/{id}/odbij', [UslugaController::class, 'odbijMolbu']);
+         Route::post('/zaposleni/usluge', [ZaposleniUslugaController::class, 'store']);
+         Route::get('/zaposleni', [ZaposleniController::class, 'index']);
+         Route::get('/zaposleni/{id}/usluge', [ZaposleniUslugaController::class, 'show']);
+         Route::post('/radno-vreme', [RadnoVremeController::class, 'store']);
+         Route::get('/radno-vreme/raspored', [RadnoVremeController::class, 'index']);
+    });
+
+    Route::prefix('zaposleni')->group(function () {
+        Route::get('/moj-raspored-smena', [RadnoVremeController::class, 'mojRaspored']);
+        Route::get('/moj-raspored-obaveza', [RezervacijaController::class, 'dnevniRasporedObaveza']);
+        Route::get('/zaposleni/moje-usluge', [ZaposleniUslugaController::class, 'mojeUsluge']);
+        Route::get('/rezervacije/moj-raspored-obaveza', [RezervacijaController::class, 'rasporedObaveza']);
+
+    });
+
+    Route::prefix('klijent')->group(function () {
+        Route::post('/rezervacije', [RezervacijaController::class, 'store']);
+        Route::get('/rezervacije/moje-rezervacije', [RezervacijaController::class, 'rezervacijeKlijenta']);
+        Route::delete('/rezervacije/otkazi-rezervaciju/{id}', [RezervacijaController::class, 'destroy']);
+    });
+
+
+
+   
+  
+    
+    
+
+    
+    
+    
+    
+   
+   
+  
 
 });
 

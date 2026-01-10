@@ -15,16 +15,16 @@ class SalonSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. REALISTIČNE USLUGE (Srpsko tržište)
+       
         $usluge = [
-            // ŠMINKANJE
+           
             ['naziv' => 'Dnevna šminka', 'kategorija' => 'sminkanje', 'trajanje_usluge' => 45, 'cena' => 3000, 'opis' => 'Suptilan izgled za poslovne prilike.'],
             ['naziv' => 'Večernja / Glam šminka', 'kategorija' => 'sminkanje', 'trajanje_usluge' => 75, 'cena' => 5000, 'opis' => 'Jača šminka sa konturisanjem i veštačkim trepavicama.'],
             ['naziv' => 'Svadbena šminka (Mlada)', 'kategorija' => 'sminkanje', 'trajanje_usluge' => 120, 'cena' => 8500, 'opis' => 'Dugotrajna šminka sa probom uključenu u cenu.'],
             ['naziv' => 'Maturska šminka', 'kategorija' => 'sminkanje', 'trajanje_usluge' => 60, 'cena' => 4500, 'opis' => 'Moderna šminka prilagođena mladima.'],
             ['naziv' => 'Šminka za fotografisanje', 'kategorija' => 'sminkanje', 'trajanje_usluge' => 90, 'cena' => 6000, 'opis' => 'Tehnike visoke pokrivnosti za studijsko svetlo.'],
 
-            // MANIKIR
+          
             ['naziv' => 'Estetski manikir + Gel lak', 'kategorija' => 'manikir', 'trajanje_usluge' => 60, 'cena' => 2200, 'opis' => 'Sređivanje zanoktica i bojenje trajnim lakom.'],
             ['naziv' => 'Ojačavanje prirodnih noktiju', 'kategorija' => 'manikir', 'trajanje_usluge' => 90, 'cena' => 2800, 'opis' => 'Nanošenje čvrstog gela na prirodnu dužinu.'],
             ['naziv' => 'Izlivanje noktiju (S/M dužina)', 'kategorija' => 'manikir', 'trajanje_usluge' => 135, 'cena' => 3800, 'opis' => 'Produžavanje noktiju pomoću šablona.'],
