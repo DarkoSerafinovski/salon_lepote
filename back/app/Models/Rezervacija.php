@@ -24,7 +24,7 @@ class Rezervacija extends Model
     }
 
     public function zaposleni() {
-        return $this->belongsTo(User::class, 'zaposleni_id');
+       return $this->belongsTo(Zaposleni::class, 'zaposleni_id', 'user_id');
     }
 
     public function usluga() {
@@ -32,25 +32,12 @@ class Rezervacija extends Model
     }
 
    
-    public function scopeIstekle($query) {
-        return $query->where('status', 'u_obradi')->where('istice', '<', now());
-    }
-
-
-
     public function jePotvrdjena() {
     return $this->status === 'potvrdjena';
 }
 
-    public function jeUTokuObrade() {
-        return $this->status === 'u_obradi' && $this->istice > now();
-    }
+   
 
-
-public function getPreostaloSekundiAttribute() {
-    if ($this->status !== 'u_obradi' || !$this->istice) return 0;
-    return max(0, now()->diffInSeconds($this->istice, false));
-}
 
 
 }

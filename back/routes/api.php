@@ -7,6 +7,7 @@ use App\Http\Controllers\UslugaController;
 use App\Http\Controllers\RadnoVremeController;
 use App\Http\Controllers\ZaposleniUslugaController;
 use App\Http\Controllers\ZaposleniController;
+use App\Http\Controllers\RezervacijaController;
 
 
 
@@ -29,6 +30,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/usluge-izmene', [UslugaController::class, 'indexIzmene']);
     Route::post('/usluge-izmene/{id}/odobri', [UslugaController::class, 'odobriMolbu']);
     Route::post('/usluge-izmene/{id}/odbij', [UslugaController::class, 'odbijMolbu']);
+    Route::get('/rezervacije/slobodni-termini', [RezervacijaController::class, 'getTermini']);
+    Route::post('/rezervacije', [RezervacijaController::class, 'store']);
+    Route::get('/rezervacije/moje-rezervacije', [RezervacijaController::class, 'rezervacijeKlijenta']);
+    Route::delete('/rezervacije/otkazi-rezervaciju/{id}', [RezervacijaController::class, 'destroy']);
+    Route::get('/rezervacije/moj-raspored-obaveza', [RezervacijaController::class, 'rasporedObaveza']);
 
 });
 

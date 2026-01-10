@@ -18,8 +18,7 @@ return new class extends Migration
              $table->foreignId('zaposleni_id')->nullable()->constrained('users');
              $table->dateTime('vreme_od');
              $table->dateTime('vreme_do');
-             $table->enum('status', ['potvrdjena', 'otkazana','u_obradi'])->default('u_obradi');
-             $table->timestamp('istice')->nullable();
+             $table->enum('status', ['potvrdjena', 'otkazana'])->default('u_obradi');
              $table->timestamps();
         });
     }
