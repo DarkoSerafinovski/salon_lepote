@@ -22,6 +22,20 @@ class ZaposleniUslugaRequest extends FormRequest
         ];
     }
 
+
+    public function messages(): array
+{
+    return [
+        'user_id.required' => 'Morate izabrati zaposlenog.',
+        'user_id.exists' => 'Izabrani zaposleni ne postoji u evidenciji.',
+
+        'usluge.present' => 'Polje za usluge mora biti prisutno u zahtevu (čak i ako je niz prazan).',
+        'usluge.array' => 'Usluge moraju biti poslate u formatu niza.',
+
+        'usluge.*.exists' => 'Jedna ili više izabranih usluga ne postoje u bazi podataka.',
+    ];
+}
+
     
     public function withValidator($validator)
     {

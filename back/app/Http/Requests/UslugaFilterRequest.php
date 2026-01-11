@@ -22,4 +22,30 @@ class UslugaFilterRequest extends FormRequest
         'page' => 'nullable|integer|min:1'
     ];
 }
+
+
+public function messages(): array
+{
+    return [
+        'naziv.string' => 'Filter za naziv mora biti tekstualnog formata.',
+        'naziv.max' => 'Filter za naziv ne može biti duži od 50 karaktera.',
+
+        'kategorija.string' => 'Kategorija mora biti tekst.',
+        'kategorija.in' => 'Dozvoljene kategorije za filtriranje su: sminkanje ili manikir.',
+
+        'max_cena.numeric' => 'Maksimalna cena mora biti broj.',
+        'max_cena.min' => 'Maksimalna cena ne može biti manja od 0.',
+
+        'sort_by.string' => 'Polje za sortiranje mora biti tekst.',
+        'sort_by.in' => 'Možete sortirati samo po poljima: naziv, cena ili trajanje_usluge.',
+
+      
+        'order.string' => 'Redosled mora biti tekst.',
+        'order.in' => 'Redosled može biti samo "asc" (rastući) ili "desc" (opadajući).',
+
+       
+        'page.integer' => 'Broj stranice mora biti ceo broj.',
+        'page.min' => 'Broj stranice mora biti najmanje 1.',
+    ];
+}
 }

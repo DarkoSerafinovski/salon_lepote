@@ -37,8 +37,9 @@ class RadnoVremeService
     {
         return RadnoVreme::with('zaposleni') 
             ->where('radi', true) 
+            ->orderByRaw('CASE WHEN dan_u_nedelji = 0 THEN 7 ELSE dan_u_nedelji END')
+            ->orderBy('vreme_od') 
             ->get()
-            ->sortBy('vreme_od') 
             ->groupBy(function ($item) {
                 $dani = [
                     0 => 'Nedelja',
@@ -57,7 +58,7 @@ class RadnoVremeService
     public function getRasporedZaZaposlenog(int $userId)
 {
     return RadnoVreme::where('user_id', $userId)
-        ->orderBy('dan_u_nedelji', 'asc')
+        ->orderByRaw('CASE WHEN dan_u_nedelji = 0 THEN 7 ELSE dan_u_nedelji END')
         ->get();
 }
 }

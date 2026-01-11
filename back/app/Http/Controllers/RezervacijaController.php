@@ -45,7 +45,7 @@ class RezervacijaController extends Controller
     public function getTermini(Request $request)
     {
          try {
-             $this->proveraKlijenta();
+           
         return response()->json(
             $this->rezervacijaService->generisiSlobodneTermine(
                 $request->usluga_id, 

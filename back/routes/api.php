@@ -32,13 +32,15 @@ Route::middleware('auth:sanctum')->group(function () {
          Route::get('/zaposleni/{id}/usluge', [ZaposleniUslugaController::class, 'show']);
          Route::post('/radno-vreme', [RadnoVremeController::class, 'store']);
          Route::get('/radno-vreme/raspored', [RadnoVremeController::class, 'index']);
+         Route::get('/radno-vreme/raspored/{zaposleniId}', [RadnoVremeController::class, 'nedeljniRasporedZaposlenog']);
+         
     });
 
     Route::prefix('zaposleni')->group(function () {
         Route::get('/moj-raspored-smena', [RadnoVremeController::class, 'mojRaspored']);
         Route::get('/moj-raspored-obaveza', [RezervacijaController::class, 'dnevniRasporedObaveza']);
-        Route::get('/zaposleni/moje-usluge', [ZaposleniUslugaController::class, 'mojeUsluge']);
-        Route::get('/rezervacije/moj-raspored-obaveza', [RezervacijaController::class, 'rasporedObaveza']);
+        Route::get('/moje-usluge', [ZaposleniUslugaController::class, 'mojeUsluge']);
+        Route::get('/rezervacije/moj-raspored-obaveza', [RezervacijaController::class, 'dnevniRasporedObaveza']);
 
     });
 

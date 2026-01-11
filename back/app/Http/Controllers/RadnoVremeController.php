@@ -85,4 +85,37 @@ public function mojRaspored()
 }
 
 
+
+public function nedeljniRasporedZaposlenog($zaposleniId)
+{
+    try {
+        $this->proveriVlasnicu();
+        $raspored = $this->radnoVremeService->getRasporedZaZaposlenog($zaposleniId);
+
+        if ($raspored->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Nije definisano radno vreme za zaposlenog.',
+                'data' => []
+            ]);
+        }
+
+        return RadnoVremeResource::collection($raspored);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
+ private function proveriVlasnicu()
+    {
+        if (!Auth::user()->isVlasnica()) {
+            throw new Exception("Pristup zabranjen. Samo vlasnica može vršiti ovu akciju.", 403);
+        }
+    }
+
 }

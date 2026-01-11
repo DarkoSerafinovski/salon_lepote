@@ -24,14 +24,7 @@ class RadnoVreme extends Model
     }
    
 
-    public function jeRadniDan() {
-        return $this->radi && $this->vreme_od && $this->vreme_do;
-    }
+   
 
-    public function obuhvataVreme($vreme) 
-{
-    return $this->radi && 
-           $vreme >= $this->vreme_od->format('H:i') && 
-           $vreme <= $this->vreme_do->format('H:i');
-}
+    
 }
