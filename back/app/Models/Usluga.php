@@ -27,10 +27,6 @@ class Usluga extends Model
         return $this->belongsToMany(User::class, 'usluga_zaposleni', 'usluga_id', 'user_id');
     }
 
-    public function rezervacije() {
-        return $this->hasMany(Rezervacija::class, 'usluga_id');
-    }
-
    
     public function getFormatiranaCenaAttribute() {
         return number_format($this->cena, 2, ',', '.') . ' RSD';

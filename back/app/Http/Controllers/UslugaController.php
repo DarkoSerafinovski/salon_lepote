@@ -36,7 +36,7 @@ class UslugaController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Usluga je uspešno kreirana.',
-                'data' => $usluga
+                'data' =>  new UslugaResource($usluga)
             ], 201);
             
         } catch (Exception $e) {

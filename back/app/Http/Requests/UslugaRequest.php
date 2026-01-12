@@ -14,13 +14,7 @@ class UslugaRequest extends FormRequest
     }
 
 
-    protected function failedAuthorization()
-    {
-        throw new HttpResponseException(response()->json([
-            'success' => false,
-            'message' => 'Pristup odbijen. Samo vlasnica salona ima dozvolu za upravljanje uslugama.'
-        ], 403));
-    }
+  
 
     public function rules(): array
     {

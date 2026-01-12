@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id();
         $table->foreignId('usluga_id')->constrained('usluge')->onDelete('cascade');
         $table->foreignId('user_id')->constrained('users'); 
-        $table->json('novi_podaci'); 
+        $table->json('novo'); 
         $table->enum('status', ['na_cekanju', 'odobreno', 'odbijeno'])->default('na_cekanju');
         $table->timestamps();
 });

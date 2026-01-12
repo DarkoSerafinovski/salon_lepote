@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('usluge', function (Blueprint $table) {
-            $table->id();
-            $table->string('naziv');
-            $table->enum('kategorija', ['sminkanje', 'manikir']);
-            $table->integer('trajanje_usluge');
-             $table->decimal('cena', 10, 2);
-            $table->timestamps();
+        Schema::table('usluga_izmene', function (Blueprint $table) {
+            $table->renameColumn('novo', 'novi_podaci');
         });
     }
 
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('usluge');
+        Schema::table('usluga_izmene', function (Blueprint $table) {
+            $table->renameColumn('novi_podaci', 'novo');
+        });
     }
 };

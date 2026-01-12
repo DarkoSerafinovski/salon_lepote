@@ -67,9 +67,9 @@ class UslugaService
         ->where('usluga_id', $uslugaId)
         ->exists();
 
-    if (!$imaPrisustvo) {
-        throw new Exception("Nemate ovlašćenje da predlažete izmene za uslugu koju ne obavljate.");
-    }
+        if (!$imaPrisustvo) {
+            throw new Exception("Nemate ovlašćenje da predlažete izmene za uslugu koju ne obavljate.");
+        }
 
 
         $izmena = UslugaIzmena::create([
