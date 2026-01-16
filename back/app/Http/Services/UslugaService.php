@@ -44,7 +44,7 @@ class UslugaService
             $query->orderBy($sortField, $sortOrder === 'desc' ? 'desc' : 'asc');
         }
 
-        return $query->paginate(10);
+        return $query->paginate(9);
     }
 
     public function createUsluga(array $data): Usluga
