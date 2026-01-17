@@ -1,23 +1,12 @@
-import React, { useState, useEffect } from "react";
-import api from "../api";
+import React, { useEffect } from "react";
+import { useSchedule } from "../hooks/useSchedule";
 
 const WeeklySchedule = () => {
-  const [schedule, setSchedule] = useState({});
-  const [loading, setLoading] = useState(true);
+  const { schedule, loading, fetchWeeklySchedule } = useSchedule();
 
   useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const response = await api.get("/vlasnica/radno-vreme/raspored");
-        setSchedule(response.data.data);
-      } catch (err) {
-        console.error("Greška pri učitavanju rasporeda");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSchedule();
-  }, []);
+    fetchWeeklySchedule();
+  }, [fetchWeeklySchedule]);
 
   const daysOrder = [
     "Ponedeljak",
@@ -31,55 +20,65 @@ const WeeklySchedule = () => {
 
   if (loading)
     return (
-      <div className="p-20 text-center font-serif italic text-pink-800 animate-pulse">
-        Učitavanje rasporeda...
+      <div className="p-20 text-center font-serif italic text-pink-900 animate-pulse text-xl">
+        Učitavanje nedeljnog plana...
       </div>
     );
 
   return (
-    <div className="max-w-[1400px] mx-auto p-8">
-      <div className="mb-12 border-b border-pink-100 pb-8">
-        <h1 className="text-4xl font-serif text-gray-900 mb-2">
-          Nedeljni Planer
-        </h1>
-        <p className="text-gray-400 font-medium uppercase tracking-widest text-xs">
-          Radno vreme tima
+    <div className="max-w-[1600px] mx-auto p-8">
+      <div className="mb-12 flex justify-between items-end border-b border-pink-100 pb-10">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-pink-500 mb-2 block">
+            Organizacija tima
+          </span>
+          <h1 className="text-5xl font-serif text-gray-900">Nedeljni Planer</h1>
+        </div>
+        <p className="text-gray-400 italic font-light max-w-xs text-right hidden md:block">
+          Pregled svih smena i radnih sati vašeg stručnog tima za tekuću
+          nedelju.
         </p>
       </div>
 
-      {/* Grid sa fiksnim brojem kolona za desktop, ali sa proredom */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-5">
         {daysOrder.map((day) => (
           <div
             key={day}
-            className="flex flex-col bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden h-full"
+            className="group flex flex-col bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-pink-100/50 transition-all duration-500 overflow-hidden h-full"
           >
-            {/* Header Dana */}
-            <div className="bg-pink-50/50 py-4 px-6 border-b border-gray-50 text-center">
-              <span className="text-sm font-black text-pink-900 uppercase tracking-tighter">
+            <div className="bg-gray-50 group-hover:bg-pink-900 py-5 px-6 border-b border-gray-50 transition-colors duration-500 text-center">
+              <span className="text-xs font-black text-gray-400 group-hover:text-white uppercase tracking-widest transition-colors duration-500">
                 {day}
               </span>
             </div>
 
-            {/* Lista smena */}
-            <div className="p-4 space-y-3 flex-1 min-h-[300px]">
+            <div className="p-5 space-y-4 flex-1 min-h-[350px]">
               {schedule[day] && schedule[day].length > 0 ? (
                 schedule[day].map((shift, index) => (
                   <div
                     key={`${day}-${index}`}
-                    className="p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-pink-200 hover:bg-white transition-all group"
+                    className="p-5 bg-pink-50/30 rounded-[1.8rem] border border-transparent hover:border-pink-200 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md"
                   >
-                    <p className="text-sm font-bold text-gray-800 mb-1 group-hover:text-pink-700 transition-colors">
-                      {shift.zaposleni}
-                    </p>
-                    <div className="flex items-center text-[11px] font-mono text-gray-500 bg-white/50 py-1 px-2 rounded-md inline-block">
-                      {shift.vreme_od} - {shift.vreme_do}
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm font-bold text-gray-800 tracking-tight">
+                        {shift.zaposleni}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse"></span>
+                        <span className="text-[11px] font-mono font-medium text-pink-700 uppercase">
+                          {shift.vreme_od} — {shift.vreme_do}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="h-full flex items-center justify-center italic text-gray-300 text-xs">
-                  Nema smena
+                <div className="h-full flex flex-col items-center justify-center space-y-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                  <div className="w-8 h-[1px] bg-pink-900"></div>
+                  <span className="italic text-xs font-serif">
+                    Slobodan dan
+                  </span>
+                  <div className="w-8 h-[1px] bg-pink-900"></div>
                 </div>
               )}
             </div>

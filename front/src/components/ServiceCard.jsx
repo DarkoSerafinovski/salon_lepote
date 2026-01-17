@@ -26,7 +26,7 @@ const ServiceCard = ({ service, onAction, actionLabel = "" }) => {
           {service.cena_formatirano}
         </span>
         {actionLabel && (
-          <Button size="sm" onClick={() => onAction()} className="!rounded-xl">
+          <Button size="sm" onClick={onAction} className="!rounded-xl">
             {actionLabel}
           </Button>
         )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import api from "../api";
+import { useServices } from "../hooks/useServices";
 import FormInput from "../components/FormInput";
 import FormSelect from "../components/FormSelect";
 import Button from "../components/Button";
@@ -9,11 +9,10 @@ import Alert from "../components/Alert";
 const EditService = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { updateService, loading } = useServices();
   const userType = localStorage.getItem("user_type");
 
-  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "error" });
-
   const [formData, setFormData] = useState({
     id: location.state?.service?.id || 0,
     naziv: location.state?.service?.naziv || "",
@@ -38,60 +37,60 @@ const EditService = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
+    setMessage({ text: "", type: "error" });
 
-    const data = new FormData();
-    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
-    data.append("_method", "PUT");
+    const result = await updateService(formData.id, formData);
 
-    try {
-      const response = await api.post(`/usluge/${formData.id}`, data);
-      setMessage({ text: response.data.message, type: "success" });
-    } catch (err) {
-      console.log(err.response.data.error);
-      setMessage({
-        text: err.response?.data?.error || "Greška",
-        type: "error",
-      });
-    } finally {
-      setSubmitting(false);
+    if (result.success) {
+      setMessage({ text: result.message, type: "success" });
+      setTimeout(() => navigate("/services"), 2000);
+    } else {
+      setMessage({ text: result.message, type: "error" });
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-pink-100/30 overflow-hidden border border-pink-50">
-        <div
-          className={`${
-            userType === "vlasnica" ? "bg-amber-800" : "bg-pink-800"
-          } p-10 text-white`}
-        >
-          <h2 className="text-3xl font-serif mb-2">
+      <div className="bg-white rounded-[3rem] shadow-2xl shadow-pink-100/40 overflow-hidden border border-pink-50">
+        <div className="bg-pink-900 p-10 text-white">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">
+            Administracija kataloga
+          </span>
+          <h2 className="text-3xl font-serif mt-2 mb-1">
             {userType === "vlasnica"
               ? "Ažuriranje Usluge"
               : "Predlog za Izmenu"}
           </h2>
-          <p className="opacity-70 italic text-sm">Menjate: {formData.naziv}</p>
+          <p className="opacity-70 italic text-sm font-light">
+            Trenutno menjate:{" "}
+            <span className="font-bold">{formData.naziv}</span>
+          </p>
         </div>
 
-        <div className="p-10">
-          <Alert message={message.text} type={message.type} className="mb-8" />
+        <div className="p-8 md:p-12">
+          {message.text && (
+            <Alert
+              message={message.text}
+              type={message.type}
+              className="mb-8"
+            />
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FormInput
                 label="Naziv"
                 name="naziv"
                 value={formData.naziv}
                 onChange={handleChange}
-                accentColor={userType === "vlasnica" ? "gold" : "pink"}
+                accentColor="pink"
               />
               <FormSelect
                 label="Kategorija"
                 name="kategorija"
                 value={formData.kategorija}
                 onChange={handleChange}
-                accentColor={userType === "vlasnica" ? "gold" : "pink"}
+                accentColor="pink"
                 options={[
                   { value: "sminkanje", label: "Šminkanje" },
                   { value: "manikir", label: "Manikir" },
@@ -106,7 +105,7 @@ const EditService = () => {
                 name="trajanje_usluge"
                 value={formData.trajanje_usluge}
                 onChange={handleChange}
-                accentColor={userType === "vlasnica" ? "gold" : "pink"}
+                accentColor="pink"
               />
               <FormInput
                 label="Cena (RSD)"
@@ -114,12 +113,12 @@ const EditService = () => {
                 name="cena"
                 value={formData.cena}
                 onChange={handleChange}
-                accentColor={userType === "vlasnica" ? "gold" : "pink"}
+                accentColor="pink"
               />
             </div>
 
             <div className="flex flex-col">
-              <label className="text-xs uppercase font-bold text-gray-400 mb-2 ml-1">
+              <label className="text-[10px] uppercase tracking-[0.2em] font-black text-gray-400 mb-3 ml-1">
                 Opis tretmana
               </label>
               <textarea
@@ -127,28 +126,30 @@ const EditService = () => {
                 value={formData.opis}
                 onChange={handleChange}
                 rows="4"
-                className={`p-5 bg-gray-50 border border-transparent rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all ${
-                  userType === "vlasnica"
-                    ? "focus:border-amber-200 focus:ring-amber-50"
-                    : "focus:border-pink-200 focus:ring-pink-50"
-                }`}
+                className="p-6 bg-gray-50 border border-transparent rounded-[1.5rem] outline-none focus:bg-white focus:border-pink-200 focus:ring-4 focus:ring-pink-50 transition-all font-light text-gray-700"
               />
             </div>
 
-            <Button
-              type="submit"
-              fullWidth
-              isLoading={submitting}
-              className={
-                userType === "vlasnica"
-                  ? "!bg-amber-800 hover:!bg-amber-900"
-                  : ""
-              }
-            >
-              {userType === "vlasnica"
-                ? "SAČUVAJ PROMENE"
-                : "POŠALJI NA ODOBRENJE"}
-            </Button>
+            <div className="flex gap-4 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate(-1)}
+                className="!rounded-2xl px-8"
+              >
+                ODUSTANI
+              </Button>
+              <Button
+                type="submit"
+                fullWidth
+                isLoading={loading}
+                className="!bg-pink-900 shadow-xl shadow-pink-100 !py-4 !rounded-2xl uppercase tracking-widest text-xs font-black"
+              >
+                {userType === "vlasnica"
+                  ? "SAČUVAJ PROMENE"
+                  : "POŠALJI NA ODOBRENJE"}
+              </Button>
+            </div>
           </form>
         </div>
       </div>

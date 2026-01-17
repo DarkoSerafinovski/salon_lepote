@@ -1,39 +1,34 @@
 import React, { useState, useEffect } from "react";
-import api from "../api";
+import { useEmployees } from "../hooks/useEmployees";
+import { useServices } from "../hooks/useServices";
 import Button from "./Button";
 import Alert from "./Alert";
 
 const EmployeeServicesModal = ({ employee, onClose }) => {
+  const {
+    getEmployeeServices,
+    updateEmployeeServices,
+    loading: subLoading,
+  } = useEmployees();
+  const { fetchServices, services: allServices } = useServices();
+
   const [myServices, setMyServices] = useState([]);
-  const [allServices, setAllServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      try {
-        const kategorijaMap = {
-          sminkerka: "sminkanje",
-          manikirka: "manikir",
-        };
+      const kategorijaMap = { sminkerka: "sminkanje", manikirka: "manikir" };
+      const targetKategorija = kategorijaMap[employee.uloga];
 
-        const targetKategorija = kategorijaMap[employee.uloga];
-        const [resMy, resAll] = await Promise.all([
-          api.get(`/vlasnica/zaposleni/${employee.id}/usluge`),
-          api.get("/usluge", {
-            params: { kategorija: targetKategorija },
-          }),
-        ]);
+      const [resMy] = await Promise.all([
+        getEmployeeServices(employee.id),
+        fetchServices(targetKategorija),
+      ]);
 
-        setMyServices(resMy.data.data);
-        setAllServices(resAll.data.data);
-      } catch (err) {
-        setMessage({ type: "error", text: "Greška pri učitavanju podataka." });
-      } finally {
-        setLoading(false);
-      }
+      setMyServices(resMy);
+      setLoading(false);
     };
     fetchData();
   }, [employee.id, employee.uloga]);
@@ -49,108 +44,128 @@ const EmployeeServicesModal = ({ employee, onClose }) => {
   };
 
   const handleSave = async () => {
-    setSubmitting(true);
-    try {
-      const payload = {
-        user_id: employee.id,
-        usluge: myServices.map((s) => s.id),
-      };
+    setMessage(null);
+    const serviceIds = myServices.map((s) => s.id);
+    const result = await updateEmployeeServices(employee.id, serviceIds);
 
-      await api.post("/vlasnica/zaposleni/usluge", payload);
-      setMessage({ type: "success", text: "Usluge su uspešno ažurirane!" });
+    if (result.success) {
+      setMessage({ type: "success", text: result.message });
       setTimeout(onClose, 1500);
-    } catch (err) {
-      console.error(err);
-      setMessage({ type: "error", text: "Greška pri čuvanju izmena." });
-    } finally {
-      setSubmitting(false);
+    } else {
+      setMessage({ type: "error", text: result.message });
     }
   };
 
-  if (loading) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
-        <div className="p-8 bg-pink-800 text-white flex justify-between items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pink-950/30 backdrop-blur-md">
+      <div className="bg-white rounded-[3.5rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-white">
+        <div className="p-10 bg-pink-900 text-white flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-serif">Upravljanje uslugama</h2>
-            <p className="text-pink-200 text-sm italic">
-              {employee.ime_prezime}
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60 block mb-1">
+              Kompetencije zaposlenog
+            </span>
+            <h2 className="text-3xl font-serif">{employee.ime_prezime}</h2>
+            <p className="text-pink-200/70 text-xs italic mt-1 capitalize">
+              Specijalizacija: {employee.uloga}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-white/50 hover:text-white text-2xl"
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-2xl transition-all"
           >
             &times;
           </button>
         </div>
 
-        <div className="p-8 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">
-              Usluge koje obavlja ({myServices.length})
-            </h3>
-            <div className="space-y-2">
-              {myServices.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex justify-between items-center p-3 bg-pink-50 rounded-2xl border border-pink-100"
-                >
-                  <span className="text-sm font-medium text-pink-900">
-                    {s.naziv}
-                  </span>
-                  <button
-                    onClick={() => removeService(s.id)}
-                    className="w-8 h-8 flex items-center justify-center bg-white text-red-500 rounded-xl hover:bg-red-50 shadow-sm transition-colors"
-                  >
-                    &times;
-                  </button>
+        <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+          {loading ? (
+            <div className="w-full py-20 text-center font-serif italic text-pink-900 animate-pulse">
+              Učitavanje kataloga usluga...
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 p-10 overflow-y-auto border-r border-gray-50">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-[11px] font-black uppercase tracking-widest text-gray-400">
+                    Aktivne usluge ({myServices.length})
+                  </h3>
                 </div>
-              ))}
-              {myServices.length === 0 && (
-                <p className="text-gray-400 italic text-sm">
-                  Nema dodeljenih usluga.
-                </p>
-              )}
-            </div>
-          </div>
 
-          <div className="border-l border-gray-100 pl-0 md:pl-8">
-            <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">
-              Dodaj nove usluge
-            </h3>
-            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-              {allServices
-                .filter((s) => !myServices.find((ms) => ms.id === s.id))
-                .map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex justify-between items-center p-3 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors cursor-pointer group"
-                    onClick={() => addService(s)}
-                  >
-                    <span className="text-sm text-gray-700">{s.naziv}</span>
-                    <span className="text-green-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                      +
-                    </span>
-                  </div>
-                ))}
-            </div>
-          </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {myServices.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex justify-between items-center p-5 bg-pink-50/50 rounded-[1.8rem] border border-pink-100 group animate-in fade-in slide-in-from-left-4"
+                    >
+                      <span className="text-sm font-bold text-pink-900">
+                        {s.naziv}
+                      </span>
+                      <button
+                        onClick={() => removeService(s.id)}
+                        className="w-8 h-8 flex items-center justify-center bg-white text-pink-300 rounded-xl hover:text-red-500 hover:shadow-md transition-all"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                  {myServices.length === 0 && (
+                    <div className="py-10 text-center border-2 border-dashed border-gray-100 rounded-[2rem]">
+                      <p className="text-gray-300 italic text-sm font-light">
+                        Nema dodeljenih usluga
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 p-10 overflow-y-auto bg-gray-50/30">
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-6">
+                  Dostupno u kategoriji
+                </h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {allServices
+                    .filter((s) => !myServices.find((ms) => ms.id === s.id))
+                    .map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => addService(s)}
+                        className="flex justify-between items-center p-5 bg-white rounded-[1.8rem] border border-transparent shadow-sm hover:border-pink-200 hover:shadow-md transition-all text-left group"
+                      >
+                        <span className="text-sm text-gray-600 font-medium group-hover:text-pink-900 transition-colors">
+                          {s.naziv}
+                        </span>
+                        <span className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 text-gray-300 group-hover:bg-pink-900 group-hover:text-white transition-all">
+                          +
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="p-8 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
-          <div className="flex-1 mr-4">
-            {message && <Alert type={message.type} message={message.text} />}
-          </div>
-          <div className="flex gap-4">
-            <Button variant="outline" onClick={onClose}>
-              ODUSTANI
-            </Button>
-            <Button onClick={handleSave} isLoading={submitting}>
-              SAČUVAJ IZMENE
-            </Button>
+        <div className="p-10 border-t border-gray-100 bg-white">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex-1 w-full">
+              {message && <Alert type={message.type} message={message.text} />}
+            </div>
+            <div className="flex gap-4 w-full md:w-auto">
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                className="!rounded-2xl px-8"
+              >
+                ODUSTANI
+              </Button>
+              <Button
+                onClick={handleSave}
+                isLoading={subLoading}
+                className="!rounded-2xl px-10 shadow-xl shadow-pink-100 uppercase tracking-widest text-xs font-black"
+              >
+                SAČUVAJ IZMENE
+              </Button>
+            </div>
           </div>
         </div>
       </div>

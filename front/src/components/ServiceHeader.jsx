@@ -35,8 +35,8 @@ const ServiceHeader = ({ filters, onFilterChange, maxPrice = 10000 }) => {
             onChange={onFilterChange}
             options={[
               { value: "", label: "Sve usluge" },
-              { value: "sminkanje", label: "💄 Šminkanje" },
-              { value: "manikir", label: "💅 Manikir" },
+              { value: "sminkanje", label: "Šminkanje" },
+              { value: "manikir", label: "Manikir" },
             ]}
           />
 
@@ -74,7 +74,7 @@ const ServiceHeader = ({ filters, onFilterChange, maxPrice = 10000 }) => {
             onChange={onFilterChange}
             options={[
               { value: "cena", label: "Ceni" },
-              { value: "naziv", label: "Abecedi" },
+              { value: "naziv", label: "Nazivu" },
             ]}
           />
 

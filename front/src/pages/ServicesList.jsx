@@ -1,99 +1,65 @@
-import React, { useState, useEffect, act } from "react";
-import api from "../api";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useServices } from "../hooks/useServices";
 import Alert from "../components/Alert";
 import ServiceHeader from "../components/ServiceHeader";
 import ServiceCard from "../components/ServiceCard";
 import Pagination from "../components/Pagination";
-import { useNavigate } from "react-router-dom";
+import BookingModal from "../components/BookingModal";
+import { useAuth } from "../hooks/useAuth";
+import Button from "../components/Button";
+import { useBookings } from "../hooks/useBookings";
 
 const ServicesList = () => {
-  const [services, setServices] = useState([]);
-  const [meta, setMeta] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("all");
-  const [error, setError] = useState("");
-  const [absoluteMaxPrice, setAbsoluteMaxPrice] = useState(10000);
   const navigate = useNavigate();
+  const { getUserData } = useAuth();
 
-  const [filters, setFilters] = useState({
+  const user = getUserData();
+
+  const isEmployee = ["sminkerka", "manikirka"].includes(user.type);
+
+  const {
+    services,
+    meta,
+    loading,
+    activeTab,
+    setActiveTab,
+    absoluteMaxPrice,
+    filters,
+    handleFilterChange,
+    handlePageChange,
+  } = useServices({
     sort_by: "cena",
     order: "desc",
     page: 1,
     naziv: "",
     kategorija: "",
-    max_cena: 10000,
   });
 
-  const userType = localStorage.getItem("user_type");
-  const isEmployee = ["sminkerka", "manikirka"].includes(userType);
+  const { selectedService, setSelectedService, bookTermin } = useBookings();
 
-  const getActionButtonProps = (service) => {
-    const userType = localStorage.getItem("user_type");
-
-    if (userType === "vlasnica") {
-      return { label: "IZMENI", show: true };
+  const getButtonProps = () => {
+    if (user.type === "vlasnica") return "IZMENI";
+    if (isEmployee) {
+      return activeTab === "mine" ? "PREDLOŽI IZMENU" : "";
     }
-
-    if (["sminkerka", "manikirka"].includes(userType)) {
-      if (activeTab === "mine") {
-        return { label: "PREDLOŽI IZMENU", show: true };
-      } else {
-        return { label: "", show: false };
-      }
-    }
-
-    return { label: "ZAKAŽI", show: true };
-  };
-
-  const fetchServices = async () => {
-    setLoading(true);
-    try {
-      let response;
-      if (activeTab === "mine") {
-        response = await api.get("zaposleni/moje-usluge");
-      } else {
-        response = await api.get("/usluge", { params: filters });
-      }
-
-      const data = response.data.data;
-
-      setServices(data);
-      setMeta(response.data.meta);
-
-      if (data.length > 0) {
-        const highest = Math.max(...data.map((s) => s.cena_raw));
-
-        if (highest > absoluteMaxPrice || filters.max_cena === "") {
-          setAbsoluteMaxPrice(highest);
-          if (filters.max_cena === "") {
-            setFilters((prev) => ({ ...prev, max_cena: highest }));
-          }
-        }
-      }
-    } catch (err) {
-      setError("Neuspešno učitavanje usluga.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchServices();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [filters, activeTab]);
-
-  const handleFilterChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value, page: 1 });
+    return "ZAKAŽI";
   };
 
   const handleAction = (service) => {
-    if (["vlasnica", "sminkerka", "manikirka"].includes(userType)) {
+    if (["vlasnica", "sminkerka", "manikirka"].includes(user.type)) {
       navigate(`/services/edit`, { state: { service } });
-    } else if (userType === "klijent") {
-      navigate(`/book/${service.id}`);
+    } else {
+      setSelectedService(service);
+    }
+  };
+
+  const onConfirmBooking = async (data) => {
+    const result = await bookTermin(data);
+    if (result.success) {
+      alert("Termin uspešno rezervisan!");
+    } else {
+      alert(result.error);
     }
   };
 
@@ -101,26 +67,18 @@ const ServicesList = () => {
     <div className="max-w-7xl mx-auto p-6">
       {isEmployee && (
         <div className="flex gap-4 mb-6 bg-white p-2 rounded-2xl w-fit shadow-sm border border-pink-50">
-          <button
-            onClick={() => setActiveTab("all")}
-            className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "all"
-                ? "bg-pink-800 text-white"
-                : "text-gray-400 hover:text-pink-800"
-            }`}
-          >
-            Sve usluge
-          </button>
-          <button
-            onClick={() => setActiveTab("mine")}
-            className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "mine"
-                ? "bg-pink-800 text-white"
-                : "text-gray-400 hover:text-pink-800"
-            }`}
-          >
-            Moje usluge
-          </button>
+          {["all", "mine"].map((tab) => (
+            <Button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              variant={activeTab === tab ? "default" : "outline"}
+              className={`!rounded-xl !px-6 !py-2 !text-sm !font-bold !border-none ${
+                activeTab !== tab ? "!text-gray-400 hover:!text-pink-800" : ""
+              }`}
+            >
+              {tab === "all" ? "Sve usluge" : "Moje usluge"}
+            </Button>
+          ))}
         </div>
       )}
 
@@ -140,8 +98,8 @@ const ServicesList = () => {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-800"></div>
+        <div className="flex justify-center py-20 animate-pulse">
+          <div className="h-12 w-12 border-b-2 border-pink-800 rounded-full animate-spin"></div>
         </div>
       ) : services.length > 0 ? (
         <>
@@ -151,26 +109,28 @@ const ServicesList = () => {
                 key={service.id}
                 service={service}
                 onAction={() => handleAction(service)}
-                showAction={getActionButtonProps(service).show}
-                actionLabel={getActionButtonProps(service).label}
+                actionLabel={getButtonProps()}
               />
             ))}
           </div>
 
-          <Pagination
-            meta={meta}
-            onPageChange={(page) => setFilters({ ...filters, page })}
-          />
+          {selectedService && (
+            <BookingModal
+              service={selectedService}
+              onClose={() => setSelectedService(null)}
+              onConfirm={onConfirmBooking}
+            />
+          )}
+
+          <Pagination meta={meta} onPageChange={handlePageChange} />
         </>
       ) : (
-        <div className="py-10">
-          <Alert
-            type="info"
-            variant="panel"
-            message="Nema pronađenih usluga"
-            description="Nažalost, nijedan tretman ne odgovara vašim trenutnim filterima. Pokušajte da proširite opseg cene ili promenite naziv pretrage."
-          />
-        </div>
+        <Alert
+          type="info"
+          variant="panel"
+          message="Nema pronađenih usluga"
+          description="Pokušajte da promenite filtere pretrage."
+        />
       )}
     </div>
   );

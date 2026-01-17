@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import api from "../api";
+import React from "react";
+import { useEmployees } from "../hooks/useEmployees";
+import Button from "../components/Button";
 import EmployeeCard from "../components/EmployeeCard";
 import Pagination from "../components/Pagination";
 import FormInput from "../components/FormInput";
@@ -7,19 +8,25 @@ import FormSelect from "../components/FormSelect";
 import EmployeeServicesModal from "../components/EmployeeSevicesModal";
 import EmployeeScheduleModal from "../components/EmployeeScheduleModal";
 import AssignScheduleModal from "../components/AssignScheduleModal";
+import { useNavigate } from "react-router-dom";
 
 const EmployeesList = () => {
-  const [employees, setEmployees] = useState([]);
-  const [meta, setMeta] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [searchIme, setSearchIme] = useState("");
-  const [searchPrezime, setSearchPrezime] = useState("");
-
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [scheduleEmployee, setScheduleEmployee] = useState(null);
-  const [assigningEmployee, setAssigningEmployee] = useState(null);
-
-  const [filters, setFilters] = useState({
+  const {
+    employees,
+    meta,
+    loading,
+    filters,
+    setFilters,
+    searchIme,
+    searchPrezime,
+    handleFilterChange,
+    selectedEmployee,
+    setSelectedEmployee,
+    scheduleEmployee,
+    setScheduleEmployee,
+    assigningEmployee,
+    setAssigningEmployee,
+  } = useEmployees({
     ime: "",
     prezime: "",
     email: "",
@@ -31,70 +38,24 @@ const EmployeesList = () => {
     per_page: 8,
   });
 
-  const fetchEmployees = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get("/vlasnica/zaposleni", {
-        params: filters,
-      });
-      setEmployees(response.data.data);
-      setMeta(response.data.meta);
-    } catch (err) {
-      console.error("Greška pri učitavanju zaposlenih", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEmployees();
-  }, [filters]);
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setFilters((prev) => ({
-        ...prev,
-        ime: searchIme,
-        prezime: searchPrezime,
-        page: 1,
-      }));
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchIme, searchPrezime]);
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "ime") {
-      setSearchIme(value);
-    } else if (name === "prezime") {
-      setSearchPrezime(value);
-    } else {
-      setFilters((prev) => ({ ...prev, [name]: value, page: 1 }));
-    }
-  };
-
-  const handleViewServices = (employee) => {
-    setSelectedEmployee(employee);
-  };
-
-  const handleAssignNew = (employee) => {
-    setScheduleEmployee(null); // Zatvaramo pregled
-    setAssigningEmployee(employee); // Otvaramo formu
-  };
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-serif text-pink-900 mb-2">Naš Tim</h1>
-          <p className="text-gray-500 italic">
-            Upravljajte zaposlenima i njihovim performansama
-          </p>
+      <div className="mb-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="flex justify-between items-start w-full lg:w-auto">
+          <div>
+            <h1 className="text-4xl font-serif text-pink-900 mb-2">Naš Tim</h1>
+            <p className="text-gray-500 italic">
+              Upravljajte zaposlenima i njihovim performansama
+            </p>
+          </div>
+          <div className="lg:hidden">
+            <Button className="!rounded-full px-6">+ NOVI</Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-[2rem] shadow-sm border border-pink-50 flex-1 ml-0 md:ml-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-[2.5rem] shadow-sm border border-pink-50 flex-1">
           <FormInput
             label="Ime"
             name="ime"
@@ -125,18 +86,27 @@ const EmployeesList = () => {
             value={filters.sort_by}
             onChange={handleFilterChange}
             options={[
-              { value: "ime", label: "Po imenu" },
-              { value: "prezime", label: "Po prezimenu" },
-              { value: "email", label: "Po email-u" },
-              { value: "type", label: "Po profesiji" },
               { value: "radni_staz", label: "Po stažu" },
+              { value: "ime", label: "Po imenu" },
+              { value: "type", label: "Po profesiji" },
             ]}
           />
+        </div>
+
+        <div className="hidden lg:block">
+          <Button
+            className="!rounded-full px-8 py-4 shadow-lg shadow-pink-100 whitespace-nowrap"
+            onClick={() => {
+              navigate("/add-employee");
+            }}
+          >
+            ZAPOSLI NOVOG
+          </Button>
         </div>
       </div>
 
       {loading ? (
-        <div className="py-20 text-center animate-pulse text-pink-800 font-serif">
+        <div className="py-20 text-center animate-pulse text-pink-800 font-serif italic text-xl">
           Učitavanje tima...
         </div>
       ) : (
@@ -146,8 +116,8 @@ const EmployeesList = () => {
               <EmployeeCard
                 key={emp.id}
                 employee={emp}
-                onViewServices={() => handleViewServices(emp)}
-                onViewSchedule={() => setScheduleEmployee(emp)} // NOVO
+                onViewServices={() => setSelectedEmployee(emp)}
+                onViewSchedule={() => setScheduleEmployee(emp)}
               />
             ))}
           </div>
@@ -158,15 +128,16 @@ const EmployeesList = () => {
               onClose={() => setSelectedEmployee(null)}
             />
           )}
-
           {scheduleEmployee && (
             <EmployeeScheduleModal
               employee={scheduleEmployee}
               onClose={() => setScheduleEmployee(null)}
-              onAssignNew={handleAssignNew}
+              onAssignNew={(emp) => {
+                setScheduleEmployee(null);
+                setAssigningEmployee(emp);
+              }}
             />
           )}
-
           {assigningEmployee && (
             <AssignScheduleModal
               employee={assigningEmployee}
