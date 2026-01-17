@@ -54,15 +54,6 @@ const ServicesList = () => {
     }
   };
 
-  const onConfirmBooking = async (data) => {
-    const result = await bookTermin(data);
-    if (result.success) {
-      alert("Termin uspešno rezervisan!");
-    } else {
-      alert(result.error);
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto p-6">
       {isEmployee && (
@@ -118,7 +109,6 @@ const ServicesList = () => {
             <BookingModal
               service={selectedService}
               onClose={() => setSelectedService(null)}
-              onConfirm={onConfirmBooking}
             />
           )}
 

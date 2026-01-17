@@ -30,11 +30,13 @@ const BookingModal = ({ service, onClose, onConfirm }) => {
       });
 
       if (result.success) {
-        onConfirm();
+        alert("Rezervacija uspesno izvrsena");
+
+        onClose();
       } else {
         setLocalError(result.error);
-        setIsSubmitting(false);
       }
+      setIsSubmitting(false);
     }
   };
 
@@ -105,8 +107,8 @@ const BookingModal = ({ service, onClose, onConfirm }) => {
                       selectedTime === slot.vreme
                         ? "bg-pink-900 text-white shadow-lg shadow-pink-200 scale-105"
                         : slot.dostupno
-                        ? "bg-white border border-pink-50 text-gray-700 hover:border-pink-300"
-                        : "bg-gray-100/50 text-gray-300 cursor-not-allowed opacity-40"
+                          ? "bg-white border border-pink-50 text-gray-700 hover:border-pink-300"
+                          : "bg-gray-100/50 text-gray-300 cursor-not-allowed opacity-40"
                     }`}
                   >
                     {slot.vreme}
