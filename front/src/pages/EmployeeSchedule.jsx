@@ -82,12 +82,6 @@ const EmployeeSchedule = () => {
           </div>
         ))}
       </div>
-
-      <div className="mt-12 p-6 bg-pink-50/30 rounded-3xl border border-pink-50/50 text-center">
-        <p className="text-xs text-pink-700/60 italic font-light">
-          * Za sve promene u rasporedu, molimo kontaktiraj menadžment salona.
-        </p>
-      </div>
     </div>
   );
 };

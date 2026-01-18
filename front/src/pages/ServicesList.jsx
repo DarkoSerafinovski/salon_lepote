@@ -36,7 +36,7 @@ const ServicesList = () => {
     kategorija: "",
   });
 
-  const { selectedService, setSelectedService, bookTermin } = useBookings();
+  const { selectedService, setSelectedService } = useBookings();
 
   const getButtonProps = () => {
     if (user.type === "vlasnica") return "IZMENI";

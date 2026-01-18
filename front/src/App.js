@@ -21,11 +21,11 @@ import EmployeeDailySchedule from "./pages/EmployeeDailySchedule";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("token")
+    !!sessionStorage.getItem("token"),
   );
 
   const checkAuth = () => {
-    setIsAuthenticated(!!localStorage.getItem("token"));
+    setIsAuthenticated(!!sessionStorage.getItem("token"));
   };
   return (
     <Router>

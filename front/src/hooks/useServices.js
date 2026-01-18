@@ -6,7 +6,7 @@ export const useServices = (initialFilters) => {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
-  const [absoluteMaxPrice, setAbsoluteMaxPrice] = useState(10000);
+  const [absoluteMaxPrice, setAbsoluteMaxPrice] = useState(0);
   const [filters, setFilters] = useState(initialFilters);
   const [requests, setRequests] = useState([]);
 
@@ -23,11 +23,6 @@ export const useServices = (initialFilters) => {
       const data = response.data.data;
       setServices(data);
       setMeta(response.data.meta);
-
-      if (data.length > 0 && activeTab === "all") {
-        const highest = Math.max(...data.map((s) => s.cena_raw));
-        setAbsoluteMaxPrice(highest);
-      }
     } catch (err) {
       console.error("Greška pri učitavanju usluga");
     } finally {
@@ -39,6 +34,21 @@ export const useServices = (initialFilters) => {
     const timer = setTimeout(fetchServices, 500);
     return () => clearTimeout(timer);
   }, [filters, activeTab]);
+
+  useEffect(() => {
+    if (services.length > 0 && activeTab === "all") {
+      const highestInCurrentFetch = Math.max(
+        ...services.map((s) => s.cena_raw || 0),
+      );
+
+      setAbsoluteMaxPrice((prevMax) => {
+        if (highestInCurrentFetch > prevMax || prevMax === 0) {
+          return highestInCurrentFetch;
+        }
+        return prevMax;
+      });
+    }
+  }, [services, activeTab]);
 
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value, page: 1 });
@@ -96,7 +106,7 @@ export const useServices = (initialFilters) => {
   const handleServiceRequest = async (id, action) => {
     try {
       const response = await api.post(
-        `/vlasnica/usluge-izmene/${id}/${action}`
+        `/vlasnica/usluge-izmene/${id}/${action}`,
       );
       if (response.data.success) {
         if (action === "odobri") {
@@ -122,6 +132,7 @@ export const useServices = (initialFilters) => {
     setActiveTab,
     absoluteMaxPrice,
     filters,
+    fetchServices,
     setFilters,
     handleFilterChange,
     handlePageChange,

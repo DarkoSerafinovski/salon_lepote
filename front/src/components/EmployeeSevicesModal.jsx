@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useEmployees } from "../hooks/useEmployees";
-import { useServices } from "../hooks/useServices";
 import Button from "./Button";
 import Alert from "./Alert";
+import api from "../api";
 
 const EmployeeServicesModal = ({ employee, onClose }) => {
   const {
@@ -10,27 +10,39 @@ const EmployeeServicesModal = ({ employee, onClose }) => {
     updateEmployeeServices,
     loading: subLoading,
   } = useEmployees();
-  const { fetchServices, services: allServices } = useServices();
 
   const [myServices, setMyServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null);
+  const [allServices, setAllServices] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+
       const kategorijaMap = { sminkerka: "sminkanje", manikirka: "manikir" };
       const targetKategorija = kategorijaMap[employee.uloga];
 
-      const [resMy] = await Promise.all([
-        getEmployeeServices(employee.id),
-        fetchServices(targetKategorija),
-      ]);
+      try {
+        const [resMy, resAll] = await Promise.all([
+          getEmployeeServices(employee.id),
+          api.get("/usluge", { params: { kategorija: targetKategorija } }),
+        ]);
 
-      setMyServices(resMy);
-      setLoading(false);
+        setMyServices(resMy);
+
+        setAllServices(resAll.data.data);
+      } catch (err) {
+        console.error("Greška pri učitavanju podataka:", err);
+        setMessage("Došlo je do greške pri osvežavanju usluga.");
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchData();
+
+    if (employee?.id) {
+      fetchData();
+    }
   }, [employee.id, employee.uloga]);
 
   const addService = (service) => {

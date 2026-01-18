@@ -8,9 +8,9 @@ export const useAuth = () => {
 
   const handleAuthSuccess = (response) => {
     const { access_token, type, data } = response.data;
-    localStorage.setItem("token", access_token);
-    localStorage.setItem("user_type", type || data.type);
-    localStorage.setItem("user_name", data.ime);
+    sessionStorage.setItem("token", access_token);
+    sessionStorage.setItem("user_type", type || data.type);
+    sessionStorage.setItem("user_name", data.ime);
   };
 
   const login = async (formData) => {
@@ -70,14 +70,14 @@ export const useAuth = () => {
     } catch (error) {
       console.error("Greška pri logout-u na serveru", error);
     } finally {
-      localStorage.clear();
+      sessionStorage.clear();
       return true;
     }
   };
 
   const getUserData = () => ({
-    type: localStorage.getItem("user_type"),
-    name: localStorage.getItem("user_name"),
+    type: sessionStorage.getItem("user_type"),
+    name: sessionStorage.getItem("user_name"),
   });
 
   return { login, register, logout, addEmployee, getUserData, loading, error };

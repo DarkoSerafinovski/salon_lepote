@@ -5,12 +5,14 @@ import FormInput from "../components/FormInput";
 import FormSelect from "../components/FormSelect";
 import Button from "../components/Button";
 import Alert from "../components/Alert";
+import { useAuth } from "../hooks/useAuth";
 
 const EditService = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { updateService, loading } = useServices();
-  const userType = localStorage.getItem("user_type");
+  const { getUserData } = useAuth();
+  const user = getUserData();
 
   const [message, setMessage] = useState({ text: "", type: "error" });
   const [formData, setFormData] = useState({
@@ -57,7 +59,7 @@ const EditService = () => {
             Administracija kataloga
           </span>
           <h2 className="text-3xl font-serif mt-2 mb-1">
-            {userType === "vlasnica"
+            {user.type === "vlasnica"
               ? "Ažuriranje Usluge"
               : "Predlog za Izmenu"}
           </h2>
@@ -145,7 +147,7 @@ const EditService = () => {
                 isLoading={loading}
                 className="!bg-pink-900 shadow-xl shadow-pink-100 !py-4 !rounded-2xl uppercase tracking-widest text-xs font-black"
               >
-                {userType === "vlasnica"
+                {user.type === "vlasnica"
                   ? "SAČUVAJ PROMENE"
                   : "POŠALJI NA ODOBRENJE"}
               </Button>
